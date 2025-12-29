@@ -34,72 +34,98 @@ var HELPERS = {};
 
 HELPERS.word = [];
 HELPERS.word.push((function () {
-    let func = new RegisteredFunction({
-        name: "insertTable",
-        description: "Use this function to insert a table at the current cursor position or at the start/end of the document. You can specify the number of rows and columns, and optionally add headers.",
-        parameters: {
-            type: "object",
-            properties: {
-                rows: { type: "number", description: "number of rows in the table" },
-                columns: { type: "number", description: "number of columns in the table" },
-                hasHeaders: { type: "boolean", description: "whether the first row should be formatted as headers" },
-                tableStyle: { type: "string", description: "optional table style name (e.g., 'Table Grid', 'Light Grid')" },
-                width: { type: "number", description: "table width percentage (default is 100)" },
-                widthType: { type: "string", description: "width type - 'percent' or 'point' (default is 'percent')" },
-                position: { type: "string", description: "where to insert the table - 'current', 'start', or 'end' (default is 'current')" }
-            },
-            required: ["rows", "columns"]
+  let func = new RegisteredFunction({
+    name: "insertTable",
+    description:
+      "Use this function to insert a table at the current cursor position or at the start/end of the document. You can specify the number of rows and columns, and optionally add headers.",
+    parameters: {
+      type: "object",
+      properties: {
+        rows: { type: "number", description: "number of rows in the table" },
+        columns: {
+          type: "number",
+          description: "number of columns in the table",
+        },
+        hasHeaders: {
+          type: "boolean",
+          description: "whether the first row should be formatted as headers",
+        },
+        tableStyle: {
+          type: "string",
+          description:
+            "optional table style name (e.g., 'Table Grid', 'Light Grid')",
+        },
+        width: {
+          type: "number",
+          description: "table width percentage (default is 100)",
+        },
+        widthType: {
+          type: "string",
+          description:
+            "width type - 'percent' or 'point' (default is 'percent')",
+        },
+        position: {
+          type: "string",
+          description:
+            "where to insert the table - 'current', 'start', or 'end' (default is 'current')",
+        },
+      },
+      required: ["rows", "columns"],
+    },
+  });
+
+  func.call = async function (params) {
+    Asc.scope.rows = params.rows || 3;
+    Asc.scope.columns = params.columns || 3;
+    Asc.scope.hasHeaders = params.hasHeaders || false;
+    Asc.scope.tableStyle = params.tableStyle;
+    Asc.scope.width = params.width || 100;
+    Asc.scope.widthType = params.widthType || "percent";
+    Asc.scope.position = params.position || "current";
+
+    await Asc.Editor.callCommand(function () {
+      let doc = Api.GetDocument();
+
+      if (Asc.scope.position === "start") {
+        doc.MoveCursorToStart();
+      } else if (Asc.scope.position === "end") {
+        doc.MoveCursorToEnd();
+      }
+
+      let table = Api.CreateTable(Asc.scope.rows, Asc.scope.columns);
+      doc.InsertContent([table]);
+
+      let unit =
+        Asc.scope.widthType === "point" ? "twips" : Asc.scope.widthType;
+      let widthValue =
+        Asc.scope.widthType === "point"
+          ? Asc.scope.width * 20
+          : Asc.scope.width;
+      table.SetWidth(unit, widthValue);
+
+      if (Asc.scope.tableStyle) {
+        table.SetStyle(Asc.scope.tableStyle);
+      }
+
+      if (Asc.scope.hasHeaders) {
+        for (let col = 0; col < Asc.scope.columns; col++) {
+          let cell = table.GetCell(0, col);
+          if (cell) {
+            let para = cell.GetContent().GetElement(0);
+            if (para) {
+              let textPr = para.GetTextPr();
+              textPr.SetBold(true);
+              para.SetTextPr(textPr);
+            }
+          }
         }
+      }
     });
+  };
 
-    func.call = async function (params) {
-        Asc.scope.rows = params.rows || 3;
-        Asc.scope.columns = params.columns || 3;
-        Asc.scope.hasHeaders = params.hasHeaders || false;
-        Asc.scope.tableStyle = params.tableStyle;
-        Asc.scope.width = params.width || 100;
-        Asc.scope.widthType = params.widthType || "percent";
-        Asc.scope.position = params.position || "current";
-
-        await Asc.Editor.callCommand(function () {
-            let doc = Api.GetDocument();
-
-            if (Asc.scope.position === "start") {
-                doc.MoveCursorToStart();
-            } else if (Asc.scope.position === "end") {
-                doc.MoveCursorToEnd();
-            }
-
-            let table = Api.CreateTable(Asc.scope.rows, Asc.scope.columns);
-            doc.InsertContent([table]);
-
-            let unit = (Asc.scope.widthType === "point") ? "twips" : Asc.scope.widthType;
-            let widthValue = (Asc.scope.widthType === "point") ? (Asc.scope.width * 20) : Asc.scope.width;
-            table.SetWidth(unit, widthValue);
-
-            if (Asc.scope.tableStyle) {
-                table.SetStyle(Asc.scope.tableStyle);
-            }
-
-            if (Asc.scope.hasHeaders) {
-                for (let col = 0; col < Asc.scope.columns; col++) {
-                    let cell = table.GetCell(0, col);
-                    if (cell) {
-                        let para = cell.GetContent().GetElement(0);
-                        if (para) {
-                            let textPr = para.GetTextPr();
-                            textPr.SetBold(true);
-                            para.SetTextPr(textPr);
-                        }
-                    }
-                }
-            }
-        });
-    };
-
-    return func;
-
-})());
+  return func;
+})();
+);
 HELPERS.word.push((function () {
     let func = new RegisteredFunction({
         name: "insertList",
@@ -161,6 +187,99 @@ HELPERS.word.push((function () {
     return func;
 
 })());
+HELPERS.word.push((function () {
+  let func = new RegisteredFunction({
+    name: "insertTable",
+    description:
+      "Use this function to insert a table at the current cursor position or at the start/end of the document. You can specify the number of rows and columns, and optionally add headers.",
+    parameters: {
+      type: "object",
+      properties: {
+        rows: { type: "number", description: "number of rows in the table" },
+        columns: {
+          type: "number",
+          description: "number of columns in the table",
+        },
+        hasHeaders: {
+          type: "boolean",
+          description: "whether the first row should be formatted as headers",
+        },
+        tableStyle: {
+          type: "string",
+          description:
+            "optional table style name (e.g., 'Table Grid', 'Light Grid')",
+        },
+        width: {
+          type: "number",
+          description: "table width percentage (default is 100)",
+        },
+        widthType: {
+          type: "string",
+          description:
+            "width type - 'percent' or 'point' (default is 'percent')",
+        },
+        position: {
+          type: "string",
+          description:
+            "where to insert the table - 'current', 'start', or 'end' (default is 'current')",
+        },
+      },
+      required: ["rows", "columns"],
+    },
+  });
+
+  func.call = async function (params) {
+    Asc.scope.rows = params.rows || 3;
+    Asc.scope.columns = params.columns || 3;
+    Asc.scope.hasHeaders = params.hasHeaders || false;
+    Asc.scope.tableStyle = params.tableStyle;
+    Asc.scope.width = params.width || 100;
+    Asc.scope.widthType = params.widthType || "percent";
+    Asc.scope.position = params.position || "current";
+
+    await Asc.Editor.callCommand(function () {
+      let doc = Api.GetDocument();
+
+      if (Asc.scope.position === "start") {
+        doc.MoveCursorToStart();
+      } else if (Asc.scope.position === "end") {
+        doc.MoveCursorToEnd();
+      }
+
+      let table = Api.CreateTable(Asc.scope.rows, Asc.scope.columns);
+      doc.InsertContent([table]);
+
+      let unit =
+        Asc.scope.widthType === "point" ? "twips" : Asc.scope.widthType;
+      let widthValue =
+        Asc.scope.widthType === "point"
+          ? Asc.scope.width * 20
+          : Asc.scope.width;
+      table.SetWidth(unit, widthValue);
+
+      if (Asc.scope.tableStyle) {
+        table.SetStyle(Asc.scope.tableStyle);
+      }
+
+      if (Asc.scope.hasHeaders) {
+        for (let col = 0; col < Asc.scope.columns; col++) {
+          let cell = table.GetCell(0, col);
+          if (cell) {
+            let para = cell.GetContent().GetElement(0);
+            if (para) {
+              let textPr = para.GetTextPr();
+              textPr.SetBold(true);
+              para.SetTextPr(textPr);
+            }
+          }
+        }
+      }
+    });
+  };
+
+  return func;
+})();
+);
 HELPERS.word.push((function () {
   let func = new RegisteredFunction({
     name: "renameFormKeys",
@@ -404,8 +523,249 @@ HELPERS.word.push((function () {
   };
 
   return func;
-})());
+})();
+);
+HELPERS.word.push(
+(function () {
+let func = new RegisteredFunction({
+	name: "renameFormKeys",
+	description:
+		"Collect all form fields (keys/placeholders), ask the AI to generate unique UPPER_SNAKE_CASE keys, then rename the fields (and optionally update placeholders).",
+	// Define parameters so the AI knows what to ask for
+	parameters: {
+		type: "object",
+		properties: {
+			prompt: {
+				type: "string",
+				description:
+					"Instruction for the AI (e.g., 'Rename all form keys to UPPER_SNAKE_CASE' or 'Create unique keys from placeholders').",
+			},
+		},
+		required: ["prompt"],
+	},
+	// Provide examples to train the AI on usage
+	examples: [
+		{
+			prompt: "Rename all form keys",
+			arguments: {
+				prompt: "Rename all form keys to be unique and descriptive",
+			},
+		},
+		{
+			prompt: "Generate unique form fields",
+			arguments: {
+				prompt: "Generate unique UPPER_SNAKE_CASE keys for all form fields",
+			},
+		},
+		{
+			prompt: "Create keys from placeholders",
+			arguments: {
+				prompt:
+					"Create new keys for the form fields based on their placeholders",
+			},
+		},
+		{
+			prompt: "Standardize form field names",
+			arguments: {
+				prompt: "Standardize all form field names to UPPER_SNAKE_CASE format",
+			},
+		},
+		{
+			prompt: "Make form keys consistent",
+			arguments: {
+				prompt:
+					"Make all form keys consistent and meaningful using UPPER_SNAKE_CASE",
+			},
+		},
+	],
+});
 
+func.call = async function (params) {
+	// Helper function for parsing JSON from AI response
+	function safeParseJsonFromText(text) {
+		if (!text) throw new Error("Empty AI content");
+		let trimmed = ("" + text).trim();
+		try {
+			return JSON.parse(trimmed);
+		} catch (_) {
+			// Extract JSON from text if wrapped in other content
+			const i1 = trimmed.indexOf("{");
+			const i2 = trimmed.lastIndexOf("}");
+			if (i1 === -1 || i2 === -1 || i2 <= i1) {
+				throw new Error(
+					'AI content is not valid JSON. Got: "' +
+					trimmed.slice(0, 200) +
+					'..."'
+				);
+			}
+			return JSON.parse(trimmed.slice(i1, i2 + 1));
+		}
+	}
+
+	// Step 1: Collect all form fields from the document
+	let fieldsMap = await Asc.Editor.callCommand(function () {
+		var doc = Api.GetDocument();
+		var forms = doc.GetAllForms();
+		var out = {};
+
+		// Build a map of form fields
+		for (var i = 0; i < forms.length; i++) {
+			var f = forms[i];
+			var key = f.GetFormKey();
+			var t = f.GetFormType();
+			var ph = "";
+			if (typeof f.GetPlaceholderText === "function") {
+				try {
+					ph = f.GetPlaceholderText() || "";
+				} catch (e) {
+					ph = "";
+				}
+			}
+
+			var val = "";
+			var chk = null;
+			if (t === "textForm" || t === "comboBoxForm") {
+				// Get text value for text and combo box forms
+				if (typeof f.GetText === "function") {
+					try {
+						val = f.GetText() || "";
+					} catch (e) {
+						val = "";
+					}
+				}
+			} else if (t === "checkBoxForm") {
+				// Get checked state for checkbox forms
+				if (typeof f.IsChecked === "function") {
+					try {
+						chk = !!f.IsChecked();
+					} catch (e) {
+						chk = null;
+					}
+				}
+			}
+
+			out[key] = { type: t, ph: ph, val: val, chk: chk };
+		}
+		return out;
+	});
+
+	// Exit if no form fields found
+	if (!fieldsMap || !Object.keys(fieldsMap).length) return;
+
+	// Step 2: Prepare system instructions for AI
+	const systemHint =
+		"Return ONLY valid JSON with two properties: " +
+		'"keys" (map oldKey->newKey) and "newValues" (map newKey->placeholder). ' +
+		"Rules: " +
+		"1) New keys MUST be UPPER_SNAKE_CASE (letters, numbers, underscores only). " +
+		'2) Derive each new key from the semantic meaning of the field. Prefer "ph" (placeholder), ' +
+		'   but if "ph" is empty, use "val" (current text). Do NOT include words like ENTER/INDICATE in the key. ' +
+		"3) If multiple fields share the same meaning, add numeric suffixes (_1, _2, …). " +
+		"4) All new keys must be globally unique. " +
+		'5) "newValues" must map each new key to a short placeholder (≤60 chars). ' +
+		"Output JSON only — no explanations, no code fences.";
+
+	// Combine system hint with form fields data
+	const argPrompt =
+		systemHint + "\n\nFIELDS_JSON:\n" + JSON.stringify({ fields: fieldsMap });
+	console.log("[AI PROMPT PREVIEW]", argPrompt);
+
+	// Step 3: Create AI chat request
+	let requestEngine = AI.Request.create(AI.ActionType.Chat);
+	if (!requestEngine) return;
+
+	// Begin action group
+	await Asc.Editor.callMethod("StartAction", ["GroupActions"]);
+	await Asc.Editor.callMethod("StartAction", [
+		"Block",
+		"AI (" + requestEngine.modelUI.name + ")",
+	]);
+
+	let isSendedEndLongAction = false;
+	async function checkEndAction() {
+		if (!isSendedEndLongAction) {
+			await Asc.Editor.callMethod("EndAction", [
+				"Block",
+				"AI (" + requestEngine.modelUI.name + ")",
+			]);
+			isSendedEndLongAction = true;
+		}
+	}
+
+	// Step 4: Send request to AI and collect response
+	let resultText = "";
+
+	let result = await requestEngine.chatRequest(
+		argPrompt,
+		false,
+		async function (data) {
+			if (!data) return;
+			console.log("[AI RAW RESPONSE]", data);
+			await checkEndAction();
+			resultText += data;
+			await Asc.Editor.callMethod("EndAction", ["GroupActions", "", "cancel"]);
+			await Asc.Editor.callMethod("StartAction", ["GroupActions"]);
+		}
+	);
+
+	await checkEndAction();
+
+	await Asc.Editor.callMethod("EndAction", ["GroupActions", "", "cancel"]);
+	await Asc.Editor.callMethod("StartAction", ["GroupActions"]);
+
+	// Step 5: Parse AI response
+	let ai;
+	try {
+		ai = safeParseJsonFromText(resultText);
+	} catch (e) {
+		try {
+			ai =
+				result && result.message && typeof result.message.content === "string"
+					? safeParseJsonFromText(result.message.content)
+					: null;
+		} catch (_) { }
+	}
+
+	// Validate AI response structure
+	if (
+		!ai ||
+		typeof ai !== "object" ||
+		!ai.keys ||
+		typeof ai.keys !== "object"
+	) {
+		await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
+		return;
+	}
+	if (!ai.newValues || typeof ai.newValues !== "object") {
+		ai.newValues = {};
+	}
+
+	// Step 6: Apply new keys to form fields
+	Asc.scope._keysMap = ai.keys;
+	Asc.scope._newValues = ai.newValues;
+	await Asc.Editor.callCommand(function () {
+		var keysMap = Asc.scope._keysMap || {};
+		var newValues = Asc.scope._newValues || {};
+		var doc = Api.GetDocument();
+		var forms = doc.GetAllForms();
+
+		// Rename each form key based on AI mapping
+		for (var i = 0; i < forms.length; i++) {
+			var form = forms[i];
+			var oldKey = form.GetFormKey();
+			var newKey = oldKey in keysMap ? keysMap[oldKey] : null;
+			if (!newKey) continue;
+
+			form.SetFormKey(newKey);
+		}
+	});
+
+	// End action group
+	await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
+};
+
+return func;
+}) ());
 HELPERS.word.push((function () {
   let func = new RegisteredFunction({
     name: "extractActionItems",
@@ -591,7 +951,8 @@ HELPERS.word.push((function () {
     await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
   };
   return func;
-})());
+})();
+);
 
 
 HELPERS.slide = [];
@@ -3546,217 +3907,7 @@ HELPERS.cell.push((function () {
   };
 
   return func;
-})());
-HELPERS.cell.push((function(){
-let func = new RegisteredFunction({
-  name: "explainError",
-  description:
-    " Explains the error in the specified cell by adding a comment with the explanation. Supports common Excel errors like #DIV/0!, #N/A, #VALUE!, #REF!, and #NAME?. If there is no error in the cell, adds a comment indicating that.Specify the cell range or use the active/selected cell. Natural language triggers are supported to identify the error type from user input.",
-  parameters: {
-    type: "object",
-    properties: {
-      range: {
-        type: "string",
-        description:
-          "cell range containing error to explain (e.g., 'A1'). If omitted, uses active/selected cell",
-      },
-      userInput: {
-        type: "string",
-        description: "raw user query that may contain natural language trigger",
-      },
-    },
-    required: ["prompt"],
-  },
-
-  examples: [
-    {
-      prompt: "Explain error in active cell",
-      arguments: {},
-    },
-    {
-      prompt: "Explain error in specific cell A1",
-      arguments: { range: "A1" },
-    },
-    {
-      prompt: "Explain error in cell B5",
-      arguments: { range: "B5" },
-    },
-    {
-      prompt: "Explain #DIV/0! error from user input",
-      arguments: { userInput: "Why do I see #DIV/0! in my cell?" },
-    },
-    {
-      prompt: "Explain #N/A error from user input",
-      arguments: { userInput: "What does #N/A mean?" },
-    },
-    {
-      prompt: "Explain #VALUE! error from user input",
-      arguments: { userInput: "Explain the #VALUE! error" },
-    },
-  ],
-});
-
-func.call = async function (params) {
-  Asc.scope.range = params.range;
-
-  // Normalize error type based on user input triggers
-  let normalizedError = null;
-  if (params && params.userInput) {
-    let text = params.userInput.toLowerCase();
-
-    const triggers = ["why", "what", "explain", "meaning", "reason", "cause"];
-    let hasTrigger = triggers.some((t) => text.includes(t));
-
-    if (hasTrigger) {
-      if (/div/.test(text)) normalizedError = "#DIV/0!";
-      else if (/\bna\b/.test(text)) normalizedError = "#N/A";
-      else if (/value/.test(text)) normalizedError = "#VALUE!";
-      else if (/ref/.test(text)) normalizedError = "#REF!";
-      else if (/name/.test(text)) normalizedError = "#NAME?";
-    }
-  }
-
-  // Get error from the specified cell
-  let errorData = null;
-  if (!normalizedError) {
-    errorData = await Asc.Editor.callCommand(function () {
-      let ws = Api.GetActiveSheet();
-      let _range;
-
-      if (!Asc.scope.range) {
-        _range = Api.GetSelection();
-      } else {
-        _range = ws.GetRange(Asc.scope.range);
-      }
-
-      if (!_range || !_range.GetCells(1, 1)) {
-        return null;
-      }
-
-      let cell = _range.GetCells(1, 1);
-      let error = cell.GetValue2();
-      let cellAddress = cell.GetAddress();
-
-      return {
-        error: error,
-        address: cellAddress,
-        hasError: error && error.toString().startsWith("#"),
-      };
-    });
-  } else {
-    errorData = {
-      error: normalizedError,
-      address: Asc.scope.range || "?",
-      hasError: true,
-    };
-  }
-
-  // If no error, add comment indicating no error
-  if (!errorData || !errorData.hasError) {
-    await Asc.Editor.callCommand(function () {
-      let ws = Api.GetActiveSheet();
-      let _range;
-
-      if (!Asc.scope.range) {
-        _range = Api.GetSelection();
-      } else {
-        _range = ws.GetRange(Asc.scope.range);
-      }
-
-      if (_range) {
-        let cell = _range.GetCells(1, 1);
-        if (cell) {
-          cell.AddComment("There is no error in this cell", "AI Assistant");
-        }
-      }
-    });
-    return;
-  }
-
-  let argPrompt =
-    "Explain the following Excel error in detail:\n\n" +
-    "Error: " +
-    errorData.error +
-    "\n" +
-    "Cell: " +
-    errorData.address +
-    "\n\n" +
-    "IMPORTANT RULES:\n" +
-    "1. Identify the exact meaning of this error type (e.g., division by zero, invalid reference).\n" +
-    "2. Explain why this error commonly occurs.\n" +
-    "3. Give clear, step-by-step reasoning of the possible cause in this specific cell.\n" +
-    "4. Suggest practical ways to fix or avoid the error.\n" +
-    "5. Keep explanation simple, clear, and beginner-friendly.\n" +
-    "6. Mention common mistakes that lead to this error.\n" +
-    "7. If multiple causes are possible, list them briefly in order of likelihood.\n" +
-    "8. Keep the explanation concise but comprehensive.\n" +
-    "9. Avoid filler text and unnecessary theory.\n" +
-    "10. Response length should be under 1024 characters (recommended), maximum 32767.\n" +
-    "11. Prioritize the most important fix suggestions if length constraint requires cuts.\n" +
-    "12. Output must be plain text only, without Markdown, JSON, or special formatting.\n\n" +
-    "13. Formatting rules: each numbered point must start on a new line; if you include multiple causes, format them as sub-items starting on new lines.\n\n" +
-    "Please provide a detailed but concise explanation of this error.";
-
-  let requestEngine = AI.Request.create(AI.ActionType.Chat);
-  if (!requestEngine) return;
-
-  let isSendedEndLongAction = false;
-  async function checkEndAction() {
-    if (!isSendedEndLongAction) {
-      await Asc.Editor.callMethod("EndAction", [
-        "Block",
-        "AI (" + requestEngine.modelUI.name + ")",
-      ]);
-      isSendedEndLongAction = true;
-    }
-  }
-
-  await Asc.Editor.callMethod("StartAction", [
-    "Block",
-    "AI (" + requestEngine.modelUI.name + ")",
-  ]);
-  await Asc.Editor.callMethod("StartAction", ["GroupActions"]);
-
-  let explanation = await requestEngine.chatRequest(
-    argPrompt,
-    false,
-    async function (data) {
-      if (!data) return;
-      await checkEndAction();
-    }
-  );
-
-  await checkEndAction();
-  await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
-
-  // Add comment with explanation to the cell
-  if (explanation) {
-    Asc.scope.explanation = explanation;
-    await Asc.Editor.callCommand(function () {
-      let ws = Api.GetActiveSheet();
-      let _range;
-
-      if (!Asc.scope.range) {
-        _range = Api.GetSelection();
-      } else {
-        _range = ws.GetRange(Asc.scope.range);
-      }
-
-      if (_range) {
-        let cell = _range.GetCells(1, 1);
-        if (cell) {
-          // Create comment with error explanation
-          let commentText = "Error Explanation:\n\n" + Asc.scope.explanation;
-          cell.AddComment(commentText, "AI Assistant");
-        }
-      }
-    });
-  }
-};
-
-funcs.push(func);
-
-
-})());
+})();
+);
 
 
