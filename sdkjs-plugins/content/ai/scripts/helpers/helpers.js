@@ -404,8 +404,8 @@ HELPERS.word.push((function () {
   };
 
   return func;
-})();
-);
+})());
+
 HELPERS.word.push((function () {
   let func = new RegisteredFunction({
     name: "extractActionItems",
@@ -591,8 +591,7 @@ HELPERS.word.push((function () {
     await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
   };
   return func;
-})();
-);
+})());
 
 
 HELPERS.slide = [];
@@ -3547,8 +3546,7 @@ HELPERS.cell.push((function () {
   };
 
   return func;
-})();
-);
+})());
 HELPERS.cell.push((function(){
 let func = new RegisteredFunction({
   name: "explainError",
