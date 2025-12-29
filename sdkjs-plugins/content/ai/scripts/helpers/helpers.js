@@ -124,8 +124,8 @@ HELPERS.word.push((function () {
   };
 
   return func;
-})();
-);
+})());
+
 HELPERS.word.push((function () {
     let func = new RegisteredFunction({
         name: "insertList",
@@ -278,8 +278,7 @@ HELPERS.word.push((function () {
   };
 
   return func;
-})();
-);
+})());
 HELPERS.word.push((function () {
   let func = new RegisteredFunction({
     name: "renameFormKeys",
@@ -523,8 +522,7 @@ HELPERS.word.push((function () {
   };
 
   return func;
-})();
-);
+})());
 HELPERS.word.push(
 (function () {
 let func = new RegisteredFunction({
@@ -951,8 +949,7 @@ HELPERS.word.push((function () {
     await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
   };
   return func;
-})();
-);
+})());
 
 
 HELPERS.slide = [];
@@ -3907,7 +3904,6 @@ HELPERS.cell.push((function () {
   };
 
   return func;
-})();
-);
+})());
 
 
