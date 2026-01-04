@@ -1,0 +1,115 @@
+(function() {
+     let func = new RegisteredFunction({
+    "name": "describeImage",
+    "description": "Allows users to select an image and generate a meaningful title, description, caption, or alt text for it using AI.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "instruction for the AI (e.g., 'Add a short title for this chart.')"
+        }
+      },
+      "required": ["prompt"]
+    },
+    "examples": [
+      {
+        "prompt": "Add a short title for this chart.",
+        "arguments": { "prompt": "Add a short title for this chart." }
+      }
+    ]
+});
+
+  func.call = async function (params) {
+    async function insertMessage(message) {
+      Asc.scope._message = String(message || "");
+      await Asc.Editor.callCommand(function () {
+        let presentation = Api.GetPresentation();
+        let slide = presentation.GetCurrentSlide();
+
+        let fill = Api.CreateNoFill();
+        let stroke = Api.CreateStroke(0, Api.CreateNoFill());
+        let shape = Api.CreateShape(
+          "rect",
+          300 * 36000,
+          40 * 36000,
+          fill,
+          stroke
+        );
+        shape.SetPosition(720000, 3600000);
+
+        let docContent = shape.GetDocContent();
+        let p = docContent.GetElement(0);
+
+        let run = Api.CreateRun();
+        run.SetFontSize(22);
+        run.SetColor(0, 0, 0);
+        run.AddText(Asc.scope._message);
+        p.AddElement(run);
+
+        slide.AddObject(shape);
+        Asc.scope._message = "";
+      }, true);
+    }
+
+    try {
+      let imageData = await new Promise((resolve) => {
+        window.Asc.plugin.executeMethod(
+          "GetImageDataFromSelection",
+          [],
+          function (result) {
+            resolve(result);
+          }
+        );
+      });
+      if (!imageData || !imageData.src) {
+        await insertMessage("Please select a valid image first.");
+        return;
+      }
+
+      const whiteRectangleBase64 =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+      if (imageData.src === whiteRectangleBase64) {
+        await insertMessage("Please select a valid image first.");
+        return;
+      }
+
+      let argPrompt = params.prompt + " (for the selected image)";
+      let requestEngine = AI.Request.create(AI.ActionType.Vision);
+      if (!requestEngine) {
+        await insertMessage("AI request engine not available.");
+        return;
+      }
+      await Asc.Editor.callMethod("StartAction", ["GroupActions"]);
+
+      let resultText = "";
+
+      try {
+        let result = await requestEngine.imageVisionRequest({
+            prompt: argPrompt,
+            image: imageData.src
+        });
+        
+        if (result) {
+            resultText = result;
+        }
+      } catch (e) {
+          console.error("describeImage: imageVisionRequest failed", e);
+      }
+
+      Asc.scope.text = resultText || "";
+
+      if (Asc.scope.text && Asc.scope.text.trim().length > 0) {
+        await insertMessage(Asc.scope.text);
+      }
+      await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
+    } catch (e) {
+      try {
+        await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
+      } catch (ee) {}
+      console.error("[describeImage] error:", e);
+      await insertMessage("An error occurred while describing the image.");
+    }
+  };
+  return func;
+})();

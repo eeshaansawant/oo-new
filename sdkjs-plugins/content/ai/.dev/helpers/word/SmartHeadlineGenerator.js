@@ -1,58 +1,58 @@
-// Генерирует заголовок на основе выделенного текста или текушего параграфа либо всего документа
-(function () {
-  let func = new RegisteredFunction({
-    name: "smartHeadlineGenerator",
-    description:
-      "Generates a clear and relevant headline from the currently selected text (paragraph, slide, or section). This headline is meant to accurately represent the content, not be overly catchy.",
-    parameters: {
-      type: "object",
-      properties: {
-        scope: {
-          type: "string",
-          description:
-            "whether to summarize the 'currentParagraph', 'selection', or the 'entireDocument' (default is 'selection')",
-        },
-      },
-      required: ["prompt"],
-    },
-    examples: [
-      {
-        prompt: "Generate a headline for the selected text",
-        arguments: {
-          scope: "selection",
-          prompt: "Generate a clear headline for this text",
-        },
-      },
-      {
-        prompt: "Write a headline for the current paragraph",
-        arguments: {
-          scope: "currentParagraph",
-          prompt: "Write a precise headline for this paragraph",
-        },
-      },
-      {
-        prompt: "Create a headline",
-        arguments: {
-          scope: "entireDocument",
-          prompt: "Create a headline that represents the full document",
-        },
-      },
-      {
-        prompt: "Suggest a simple headline for an announcement",
-        arguments: {
-          scope: "selection",
-          prompt: "Provide a straightforward headline for this announcement",
-        },
-      },
-      {
-        prompt:
-          "Generate a headline for the current paragraph without extra instructions",
-        arguments: { scope: "currentParagraph" },
-      },
-    ],
-  });
+(function(){
 
-  func.call = async function (params) {
+let func = new RegisteredFunction({
+  name: "smartHeadlineGenerator",
+  description:
+    "Generates a clear and relevant headline from the currently selected text (paragraph, slide, or section). This headline is meant to accurately represent the content, not be overly catchy.",
+  parameters: {
+    type: "object",
+    properties: {
+      scope: {
+        type: "string",
+        description:
+          "whether to summarize the 'currentParagraph', 'selection', or the 'entireDocument' (default is 'selection')",
+      },
+    },
+    required: ["prompt"],
+  },
+  examples: [
+    {
+      prompt: "Generate a headline for the selected text",
+      arguments: {
+        scope: "selection",
+        prompt: "Generate a clear headline for this text",
+      },
+    },
+    {
+      prompt: "Write a headline for the current paragraph",
+      arguments: {
+        scope: "currentParagraph",
+        prompt: "Write a precise headline for this paragraph",
+      },
+    },
+    {
+      prompt: "Create a headline",
+      arguments: {
+        scope: "entireDocument",
+        prompt: "Create a headline that represents the full document",
+      },
+    },
+    {
+      prompt: "Suggest a simple headline for an announcement",
+      arguments: {
+        scope: "selection",
+        prompt: "Provide a straightforward headline for this announcement",
+      },
+    },
+    {
+      prompt:
+        "Generate a headline for the current paragraph without extra instructions",
+      arguments: { scope: "currentParagraph" },
+    },
+  ],
+});
+
+func.call = async function (params) {
     let scope = params.scope || "selection";
 
     Asc.scope.scope = scope;
@@ -145,4 +145,6 @@
     await Asc.Editor.callMethod("EndAction", ["GroupActions"]);
   };
   return func;
+
+  
 })();
