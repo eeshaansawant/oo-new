@@ -224,8 +224,6 @@ HELPERS.word.push(// В функцию changeTextStyle добавлена воз
 
   return func;
 })());
-
-
 HELPERS.word.push((function () {
   let func = new RegisteredFunction({
     name: "changeParagraphStyle",
@@ -234,6 +232,11 @@ HELPERS.word.push((function () {
     parameters: {
       type: "object",
       properties: {
+        prompt: {
+          type: "string",
+          description:
+            "Instruction for the AI (e.g., 'Change paragraph 3 to Heading 1')",
+        },
         parNumber: {
           type: "number",
           description: "The paragraph number to apply style changes to",
@@ -241,23 +244,23 @@ HELPERS.word.push((function () {
         style: {
           type: "string",
           description:
-            "The style name to apply to the paragraph (e.g., 'Heading 1', 'Heading 2', 'Normal', 'Title')",
+            "The style name to apply (e.g., 'Heading 1', 'Heading 2', 'Normal', 'Title')",
         },
       },
-      required: ["parNumber", "style"],
+      required: ["prompt"],
     },
     examples: [
       {
         prompt: "Change paragraph 3 to Heading 1.",
-        arguments: { parNumber: 3, style: "Heading 1" },
+        arguments: { prompt: "Change paragraph 3 to Heading 1.", parNumber: 3, style: "Heading 1" },
       },
       {
         prompt: "Make the first paragraph a Title.",
-        arguments: { parNumber: 1, style: "Title" },
+        arguments: { prompt: "Make the first paragraph a Title.", parNumber: 1, style: "Title" },
       },
       {
         prompt: "Set paragraph 5 to Normal style.",
-        arguments: { parNumber: 5, style: "Normal" },
+        arguments: { prompt: "Set paragraph 5 to Normal style.", parNumber: 5, style: "Normal" },
       },
     ],
   });
@@ -753,9 +756,6 @@ HELPERS.word.push((function(){
 
   return func;
 })());
-
-
-
 HELPERS.word.push((function(){
 
 let func = new RegisteredFunction({
@@ -1024,7 +1024,12 @@ HELPERS.slide.push((function() {
   };
   return func;
 })());
-HELPERS.slide.push((function () {
+HELPERS.slide.push(
+
+
+
+
+(function () {
   let func = new RegisteredFunction({
     name: "addChartToSlide",
     description:
@@ -1032,6 +1037,11 @@ HELPERS.slide.push((function () {
     parameters: {
       type: "object",
       properties: {
+        prompt: {
+          type: "string",
+          description:
+            "Instruction for the AI (e.g., 'Add a bar chart showing sales data on slide 2')",
+        },
         slideNumber: {
           type: "number",
           description:
@@ -1057,18 +1067,19 @@ HELPERS.slide.push((function () {
           description:
             "Array of category names - must have same length as each data array",
         },
-        prompt: {
+        aiDataPrompt: {
           type: "string",
           description:
             "Description of what kind of data to generate for the chart using AI (optional, use instead of data/series/categories)",
         },
       },
-      required: ["chartType"],
+      required: ["prompt"],
     },
     examples: [
       {
         prompt: "Add a bar chart showing sales data on slide 2.",
         arguments: {
+          prompt: "Add a bar chart showing sales data on slide 2.",
           slideNumber: 2,
           chartType: "bar3D",
           data: [
@@ -1082,6 +1093,7 @@ HELPERS.slide.push((function () {
       {
         prompt: "Add a pie chart on the current slide.",
         arguments: {
+          prompt: "Add a pie chart on the current slide.",
           chartType: "pie",
           data: [[30, 25, 20, 15, 10]],
           series: ["Market Share"],
@@ -1097,6 +1109,7 @@ HELPERS.slide.push((function () {
       {
         prompt: "Add a line chart with 3 series and 4 data points.",
         arguments: {
+          prompt: "Add a line chart with 3 series and 4 data points.",
           chartType: "lineNormal",
           data: [
             [10, 20, 30, 40],
@@ -1108,22 +1121,13 @@ HELPERS.slide.push((function () {
         },
       },
       {
-        prompt:
-          "Create a chart showing monthly revenue for 2024 with steady growth from $50k to $120k.",
+        prompt: "Create a chart showing monthly revenue for 2024 with steady growth.",
         arguments: {
+          prompt: "Create a chart showing monthly revenue for 2024 with steady growth.",
           slideNumber: 3,
           chartType: "lineNormal",
-          prompt:
+          aiDataPrompt:
             "Create monthly revenue data for 2024 showing steady growth from $50k to $120k",
-        },
-      },
-      {
-        prompt: "Add a doughnut chart showing budget allocation.",
-        arguments: {
-          chartType: "doughnut",
-          data: [[40, 25, 20, 15]],
-          series: ["Budget"],
-          categories: ["Marketing", "Development", "Operations", "HR"],
         },
       },
     ],

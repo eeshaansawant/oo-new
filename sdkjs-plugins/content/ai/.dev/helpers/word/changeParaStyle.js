@@ -6,6 +6,11 @@
     parameters: {
       type: "object",
       properties: {
+        prompt: {
+          type: "string",
+          description:
+            "Instruction for the AI (e.g., 'Change paragraph 3 to Heading 1')",
+        },
         parNumber: {
           type: "number",
           description: "The paragraph number to apply style changes to",
@@ -13,23 +18,23 @@
         style: {
           type: "string",
           description:
-            "The style name to apply to the paragraph (e.g., 'Heading 1', 'Heading 2', 'Normal', 'Title')",
+            "The style name to apply (e.g., 'Heading 1', 'Heading 2', 'Normal', 'Title')",
         },
       },
-      required: ["parNumber", "style"],
+      required: ["prompt"],
     },
     examples: [
       {
         prompt: "Change paragraph 3 to Heading 1.",
-        arguments: { parNumber: 3, style: "Heading 1" },
+        arguments: { prompt: "Change paragraph 3 to Heading 1.", parNumber: 3, style: "Heading 1" },
       },
       {
         prompt: "Make the first paragraph a Title.",
-        arguments: { parNumber: 1, style: "Title" },
+        arguments: { prompt: "Make the first paragraph a Title.", parNumber: 1, style: "Title" },
       },
       {
         prompt: "Set paragraph 5 to Normal style.",
-        arguments: { parNumber: 5, style: "Normal" },
+        arguments: { prompt: "Set paragraph 5 to Normal style.", parNumber: 5, style: "Normal" },
       },
     ],
   });

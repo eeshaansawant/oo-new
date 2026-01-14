@@ -1,3 +1,8 @@
+
+
+
+
+
 (function () {
   let func = new RegisteredFunction({
     name: "addChartToSlide",
@@ -6,6 +11,11 @@
     parameters: {
       type: "object",
       properties: {
+        prompt: {
+          type: "string",
+          description:
+            "Instruction for the AI (e.g., 'Add a bar chart showing sales data on slide 2')",
+        },
         slideNumber: {
           type: "number",
           description:
@@ -31,18 +41,19 @@
           description:
             "Array of category names - must have same length as each data array",
         },
-        prompt: {
+        aiDataPrompt: {
           type: "string",
           description:
             "Description of what kind of data to generate for the chart using AI (optional, use instead of data/series/categories)",
         },
       },
-      required: ["chartType"],
+      required: ["prompt"],
     },
     examples: [
       {
         prompt: "Add a bar chart showing sales data on slide 2.",
         arguments: {
+          prompt: "Add a bar chart showing sales data on slide 2.",
           slideNumber: 2,
           chartType: "bar3D",
           data: [
@@ -56,6 +67,7 @@
       {
         prompt: "Add a pie chart on the current slide.",
         arguments: {
+          prompt: "Add a pie chart on the current slide.",
           chartType: "pie",
           data: [[30, 25, 20, 15, 10]],
           series: ["Market Share"],
@@ -71,6 +83,7 @@
       {
         prompt: "Add a line chart with 3 series and 4 data points.",
         arguments: {
+          prompt: "Add a line chart with 3 series and 4 data points.",
           chartType: "lineNormal",
           data: [
             [10, 20, 30, 40],
@@ -82,22 +95,13 @@
         },
       },
       {
-        prompt:
-          "Create a chart showing monthly revenue for 2024 with steady growth from $50k to $120k.",
+        prompt: "Create a chart showing monthly revenue for 2024 with steady growth.",
         arguments: {
+          prompt: "Create a chart showing monthly revenue for 2024 with steady growth.",
           slideNumber: 3,
           chartType: "lineNormal",
-          prompt:
+          aiDataPrompt:
             "Create monthly revenue data for 2024 showing steady growth from $50k to $120k",
-        },
-      },
-      {
-        prompt: "Add a doughnut chart showing budget allocation.",
-        arguments: {
-          chartType: "doughnut",
-          data: [[40, 25, 20, 15]],
-          series: ["Budget"],
-          categories: ["Marketing", "Development", "Operations", "HR"],
         },
       },
     ],
